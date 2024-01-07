@@ -93,8 +93,10 @@ class m5VolExpansion(bt.Strategy):
 
         print('-- {} Workout Order size for buy bracket order'.format(
         self.data.datetime.datetime()))
-        # size = self.getsizer().getsizing(self.data0, isbuy=True, pips=risk_pips, price=price_high, exchange_rate=None)
-        size = 0.1
+        size = self.getsizer().getsizing(self.data0, isbuy=True, pips=risk_pips, price=price_high, exchange_rate=None)
+        # size = 0.1
+        print('size:{}',size)
+        
         print('-- {} Create buy bracket order'.format(
             self.data.datetime.datetime()))
         
@@ -169,7 +171,7 @@ storekwargs = dict(
 
 datakwargs = dict(
     historical=True,
-    fromdate=datetime.datetime(2023, 5, 1),
+    fromdate=datetime.datetime(2023, 1, 1),
     todate=datetime.datetime(2023, 5, 16),
 
     timeframe=bt.TimeFrame.Seconds,
@@ -212,12 +214,12 @@ cerebro.replaydata(data,
 #     timeframe=bt.TimeFrame.Minutes,
 #     compression=5)
 # data0 = bt.feeds.BacktraderCSVData(dataname='../backtrader/datas/2005-2006-day-001.txt')
-# cerebro.addsizer(bto.sizers.OandaV20BacktestRiskPercentSizer, percents=0.1)
+cerebro.addsizer(bto.sizers.OandaV20BacktestRiskPercentSizer, percents=1)
 cerebro.adddata(data)
 # cerebro.setbroker(store.getbroker())
 # cerebro.broker = bt.brokers.BackBroker()
-# ci = bto.commissions.OandaV20BacktestCommInfo(pip_location=0)
-# cerebro.broker.addcommissioninfo(ci)
+ci = bto.commissions.OandaV20BacktestCommInfo(pip_location=0)
+cerebro.broker.addcommissioninfo(ci)
 cerebro.addstrategy(m5VolExpansion, **stratkwargs)
 
 cerebro.addanalyzer(bt.analyzers.PyFolio)
