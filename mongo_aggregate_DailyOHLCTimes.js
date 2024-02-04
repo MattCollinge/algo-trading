@@ -83,4 +83,5 @@ db.getCollection('OHLC_EUR_USD_S5').aggregate(
 );
 
 
-db.collection.createIndex( { timestamp: 1 }, {unique: true });
+db.createCollection("OHLC_EUR_USD_S5");
+db.OHLC_EUR_USD_S5.createIndex( { timestamp: 1 }, {unique: true });

@@ -3,7 +3,7 @@ import backtrader.indicators as btind
 import backtrader.feeds as btfeeds
 import json
 import datetime  # For datetime objects
-import mongo
+import mongo_atlas
 
 # https://github.com/happydasch/btoandav20
 import btoandav20 as bto
@@ -112,7 +112,7 @@ class mongoStrategy(bt.Strategy):
     def __init__(self):
         # self.orefs = list()
         self.bars = []
-        self.OHLCRepo = mongo.OHLCMongo(self.p.instrument, self.p.timeframe)
+        self.OHLCRepo = mongo_atlas.OHLCMongo(self.p.instrument, self.p.timeframe)
         self.OHLCRepo.connect()
         # self.log(headers=True)
         

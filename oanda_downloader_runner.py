@@ -1,7 +1,7 @@
 import subprocess
 import datetime
 import argparse
-# oanda_mongo_downloader.py EUR_USD 2023 10 1 2023 10 10
+# oanda_downloader.py EUR_USD 2023 10 1 2023 10 10
 
 
 
@@ -29,16 +29,20 @@ def main():
         batchToDate = todate
 
     batchFromDate = fromdate
+    last = False
 
     while batchToDate <= todate:
-        result = subprocess.run(["python", "oanda_mongo_downloader.py", instrument, str(batchFromDate.year), str(batchFromDate.month), str(batchFromDate.day), str(batchToDate.year), 
+        result = subprocess.run(["python", "oanda_downloader.py", instrument, str(batchFromDate.year), str(batchFromDate.month), str(batchFromDate.day), str(batchToDate.year), 
                              str(batchToDate.month), str(batchToDate.day)], capture_output=True, text=True)
         print(result.stdout)
         print(result.stderr)
         batchFromDate = batchFromDate + datetime.timedelta(days=batchDaySize)
         batchToDate = batchToDate + datetime.timedelta(days=batchDaySize)
+        if last:
+            break
         if batchToDate > todate:
-            batchToDate = todate + datetime.timedelta(days=1)
+            batchToDate = todate #+ datetime.timedelta(days=1)
+            last = True
 
 if __name__ == "__main__":
     main()

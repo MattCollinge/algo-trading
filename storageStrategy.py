@@ -1,18 +1,21 @@
 import backtrader as bt
-import mongo
+import mongo_atlas
+import chDB_engine
 import datetime 
-from threading import Timer
+from threading import Timer, Condition, RLock
 
 class RepeatTimer(Timer):
     def run(self):
         while not self.finished.wait(self.interval):
             self.function(*self.args, **self.kwargs)
 
-class mongoStrategy(bt.Strategy):
+class storageStrategy(bt.Strategy):
 
     OHLCRepo = None
     bars = None
     t = None
+    zero_count = 0
+    lock = None
 
     params = dict(
         tzData=None,
@@ -39,7 +42,8 @@ class mongoStrategy(bt.Strategy):
         # close = format(self.datas[0].close[0],'.%df' % self.datas[0].contractdetails['displayPrecision'])
         # volume = self.datas[0].volume[0]
 
-        dt = bt_bar.datetime.datetime(0).astimezone(timezone)
+        # dt = bt_bar.datetime.datetime(0).astimezone(timezone)
+        dt = bt_bar.datetime.datetime(0) #.astimezone(timezone)
         dtString = dt
 
         bar = {"open": open,
@@ -48,38 +52,40 @@ class mongoStrategy(bt.Strategy):
                "close": close,
                "timestamp": dtString}
         
+        # with self.condition:
+        self.lock.acquire()
         self.bars.append(bar)
-        # if len(self.bars)  == 200:
-        #     self.flush()
+        self.lock.release()
+
 
     def flush(self):
-        if len(self.bars) == 0:
+        self.lock.acquire()
+
+        if len(self.bars) == 0 and self.zero_count > 4:
             self.t.cancel()
             print(datetime.datetime.today().isoformat(" ","seconds"),":",'Batch completed, Timer Cancelled')
             return
         
-        self.OHLCRepo.insertOHLCs(self.bars)
-        # print('Mongo Inserted:',  len(self.bars), " Bars")
-        self.bars.clear()
+        if len(self.bars) == 0:
+            self.zero_count = self.zero_count + 1
+            print(datetime.datetime.today().isoformat(" ","seconds"),":",'Timer fired:',  self.zero_count)
+        else:
+            self.zero_count = 0
+            self.OHLCRepo.insertOHLCs(self.bars)
+            self.bars.clear()
         
+        self.lock.release()        
 
     def __init__(self):
         self.bars = []
+        self.zero_count = 0
+        self.lock = RLock()
         self.t = RepeatTimer(5, self.flush)
         self.t.start()
-        self.OHLCRepo = mongo.OHLCMongo(self.p.instrument, self.p.timeframe)
+        # self.OHLCRepo = mongo_atlas.OHLCMongo(self.p.instrument, self.p.timeframe)
+        self.OHLCRepo = chDB_engine.OHLC_CHDB(self.p.instrument, self.p.timeframe)
         self.OHLCRepo.connect()
         
 
     def next(self):
         self.log()
-        
-
-
-   
-
-
-
-
-
- # truth will be called after a 15 second interval

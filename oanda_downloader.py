@@ -8,12 +8,12 @@ import datetime  # For datetime objects
 import btoandav20 as bto
 import pytz
 import argparse
-import mongoStrategy 
+import storageStrategy 
 
 def runBackTesterStrategy(instrument, fromdate, todate):
     # print(instrument, fromdate, todate)
 
-    with open("./secret/config-practice.json", "r") as file:
+    with open("./secret/config-live.json", "r") as file:
         config = json.load(file)
 
     storekwargs = dict(
@@ -49,13 +49,13 @@ def runBackTesterStrategy(instrument, fromdate, todate):
 
     cerebro = bt.Cerebro()
     cerebro.adddata(data)
-    cerebro.addstrategy(mongoStrategy.mongoStrategy, **stratkwargs)
+    cerebro.addstrategy(storageStrategy.storageStrategy, **stratkwargs)
 
     # Run over everything
     strats = cerebro.run()
 
 def main():
-    parser = argparse.ArgumentParser("oanda mongo downloader")
+    parser = argparse.ArgumentParser("oanda downloader")
     parser.add_argument("Instrument", help="An integer will be increased by 1 and printed.", type=str)
     parser.add_argument("FromYear", help="The Year part of the Date to request Instrument Data From", type=int)
     parser.add_argument("FromMonth", help="The Month part of the Date to request Instrument Data From", type=int)
