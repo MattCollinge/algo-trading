@@ -366,6 +366,18 @@ def runFullAggregationPipeline(day_increment, interval_bucket_size, interval_buc
 
 
 #interval_bucket_type: MINUTE, WEEK, MONTH
+def GenerateMinuteOHLC(instrument, start, end, minutes):
+    tzOffset = 'EST'
+    day_increment = 5
+    interval_bucket_size = minutes
+    interval_bucket_type = 'MINUTE'
+    tf = f'M{minutes}'
+
+    intervalAggregateTerm = f"toDateTime(toStartOfInterval(s5.timestamp, INTERVAL {interval_bucket_size} {interval_bucket_type}, '{tzOffset}')) as interval"
+
+    runFullAggregationPipeline(day_increment,interval_bucket_size, interval_bucket_type, intervalAggregateTerm, start, end, instrument, tf, tzOffset)
+    print(f"Finished Minute={minutes} OHLC")
+
 def GenerateHourlyOHLC(instrument, start, end):
     tzOffset = 'EST'
     day_increment = 5
