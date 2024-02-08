@@ -309,7 +309,7 @@ def aggregate_samples_to_interval(sample_df, interval_bucket_size, interval_buck
         dfres['interval'] = dfres['interval'] + timedelta(days=1)
 
     # If > than Daily Interval then adjust datetime back by the original skew added to align Trading Day with Pandas Day boundary
-    if (interval_bucket_type == 'WEEK' or (interval_bucket_type == ' MINUTE' and interval_bucket_size >= 1440)):
+    if (interval_bucket_type == 'WEEK' or (interval_bucket_type == 'MINUTE' and interval_bucket_size >= 1440)):
         dfres['high_timestamp'] = dfres['high_timestamp'] - timedelta(hours=2)
         dfres['low_timestamp'] = dfres['low_timestamp'] - timedelta(hours=2)
         dfres['first_sample'] = dfres['first_sample'] - timedelta(hours=2)
@@ -375,7 +375,7 @@ def GenerateMinuteOHLC(instrument, start, end, minutes):
 
     intervalAggregateTerm = f"toDateTime(toStartOfInterval(s5.timestamp, INTERVAL {interval_bucket_size} {interval_bucket_type}, '{tzOffset}')) as interval"
 
-    runFullAggregationPipeline(day_increment,interval_bucket_size, interval_bucket_type, intervalAggregateTerm, start, end, instrument, tf, tzOffset)
+    runFullAggregationPipeline(day_increment, interval_bucket_size, interval_bucket_type, intervalAggregateTerm, start, end, instrument, tf, tzOffset)
     print(f"Finished Minute={minutes} OHLC")
 
 def GenerateHourlyOHLC(instrument, start, end):
@@ -387,7 +387,7 @@ def GenerateHourlyOHLC(instrument, start, end):
 
     intervalAggregateTerm = f"toDateTime(toStartOfInterval(s5.timestamp, INTERVAL {interval_bucket_size} {interval_bucket_type}, '{tzOffset}')) as interval"
 
-    runFullAggregationPipeline(day_increment,interval_bucket_size, interval_bucket_type, intervalAggregateTerm, start, end, instrument, tf, tzOffset)
+    runFullAggregationPipeline(day_increment, interval_bucket_size, interval_bucket_type, intervalAggregateTerm, start, end, instrument, tf, tzOffset)
     print("Finished Hourly OHLC")
 
 
@@ -401,7 +401,7 @@ def GenerateDailyOHLC(instrument, start, end):
 
     intervalAggregateTerm = f"toDateTime(toStartOfInterval(s5.timestamp, INTERVAL {interval_bucket_size} {interval_bucket_type}, '{tzOffset}')) as interval"
 
-    runFullAggregationPipeline(day_increment,interval_bucket_size, interval_bucket_type, intervalAggregateTerm, start, end, instrument, tf, tzOffset)
+    runFullAggregationPipeline(day_increment, interval_bucket_size, interval_bucket_type, intervalAggregateTerm, start, end, instrument, tf, tzOffset)
     print("Finished Daily OHLC")
 
 

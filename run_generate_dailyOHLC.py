@@ -7,14 +7,15 @@ instrument = 'EUR_USD'
 
 # runProcessRawPipeline()
 
-# clearOHLCTable()
-minutes = 15
-GenerateMinuteOHLC(instrument, start, end, minutes)
-minutes = 5
-GenerateMinuteOHLC(instrument, start, end, minutes)
-minutes = 1
-GenerateMinuteOHLC(instrument, start, end, minutes)
+clearOHLCTable()
 
-GenerateHourlyOHLC(instrument, start, end)
+# minutes = 15
+# GenerateMinuteOHLC(instrument, start, end, minutes)
+# minutes = 5
+# GenerateMinuteOHLC(instrument, start, end, minutes)
+# minutes = 1
+# GenerateMinuteOHLC(instrument, start, end, minutes)
+
+# GenerateHourlyOHLC(instrument, start, end)
 GenerateDailyOHLC(instrument, start, end)
 GenerateWeeklyOHLC(instrument, start, end)
