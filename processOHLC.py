@@ -271,7 +271,7 @@ def dropFinalResultschDB():
     db = Session(path="/tmp/aggregated_oanda")
     db.query("drop table quant.ohlc_agg")
     
-def aggregate_samples_to_interval(sample_df, interval_bucket_size, interval_bucket_type, intervalAggregateTerm, start, end, tzOffset):
+def aggregate_samples_to_interval(sample_df, interval_bucket_size, interval_bucket_type, intervalAggregateTerm, start, end, tzOffset, hours_skew=2):
     print(f'Calling aggregate_samples_to_interval with start: {start}, end: {end}, interval_bucket_size: {interval_bucket_size}, interval_bucket_type: {interval_bucket_type}, tzOffset: {tzOffset}')
     query_sql = f"""
     select sq.interval, sq.open, sq.high, sq.low, sq.close, sq.high_timestamp, sq.low_timestamp, sq.samples as samples, sq.first_sample as first_sample, sq.last_sample as last_sample 
@@ -309,11 +309,13 @@ def aggregate_samples_to_interval(sample_df, interval_bucket_size, interval_buck
         dfres['interval'] = dfres['interval'] + timedelta(days=1)
 
     # If > than Daily Interval then adjust datetime back by the original skew added to align Trading Day with Pandas Day boundary
-    if (interval_bucket_type == 'WEEK' or (interval_bucket_type == 'MINUTE' and interval_bucket_size >= 1440)):
-        dfres['high_timestamp'] = dfres['high_timestamp'] - timedelta(hours=2)
-        dfres['low_timestamp'] = dfres['low_timestamp'] - timedelta(hours=2)
-        dfres['first_sample'] = dfres['first_sample'] - timedelta(hours=2)
-        dfres['last_sample'] = dfres['last_sample'] - timedelta(hours=2)
+    if (interval_bucket_type == 'WEEK' or (interval_bucket_type == 'MINUTE' and interval_bucket_size > 60)):
+        if (interval_bucket_type == 'MINUTE' and interval_bucket_size > 60):
+            dfres['interval'] = dfres['interval'] - timedelta(hours=hours_skew)
+        dfres['high_timestamp'] = dfres['high_timestamp'] - timedelta(hours=hours_skew)
+        dfres['low_timestamp'] = dfres['low_timestamp'] - timedelta(hours=hours_skew)
+        dfres['first_sample'] = dfres['first_sample'] - timedelta(hours=hours_skew)
+        dfres['last_sample'] = dfres['last_sample'] - timedelta(hours=hours_skew)
 
     # dfres = dfres.set_index('interval', drop=False)
     # print(dfres.head(10))
@@ -322,26 +324,26 @@ def aggregate_samples_to_interval(sample_df, interval_bucket_size, interval_buck
 
 #### Experimental
     
-def runFullAggregationPipeline(day_increment, interval_bucket_size, interval_bucket_type, intervalAggregateTerm, start, end, instrument, tf, tzOffset):
+def runFullAggregationPipeline(day_increment, interval_bucket_size, interval_bucket_type, intervalAggregateTerm, start, end, instrument, tf, tzOffset, hours_skew=2):
     #Process samples to aggregate
 
     parquetSampleFile ='./data/oanda_data_pandas.parquet' 
     df = loadOptimisedSampleData(parquetSampleFile)
 
-    if (interval_bucket_type == 'WEEK' or (interval_bucket_type == 'MINUTE' and interval_bucket_size >= 1440)):
+    if (interval_bucket_type == 'WEEK' or (interval_bucket_type == 'MINUTE' and interval_bucket_size > 60)):
         #Add 5 hours to the end of end and increment_end to align the shift to whole days - EST specific
         offset = 5
         start = start - timedelta(hours=offset)
         end = end - timedelta(hours=offset)
 
-        #Daily TF+ Specific skew added to align Trading Day with Pandas Day boundary
-        df.index = df.index + timedelta(hours=2)
+        # > H1 TF Specific skew added to align Trading Day with Pandas Day boundary
+        df.index = df.index + timedelta(hours=hours_skew)
 
     last = False
     increment_end =  start + timedelta(hours=24*day_increment)
 
     while increment_end <= end:
-        agg_df = aggregate_samples_to_interval(df, interval_bucket_size, interval_bucket_type, intervalAggregateTerm, start, increment_end, tzOffset)
+        agg_df = aggregate_samples_to_interval(df, interval_bucket_size, interval_bucket_type, intervalAggregateTerm, start, increment_end, tzOffset, hours_skew)
 
         #Workout the next increment in hours (not for Week (& Month?) Interval)
         if(interval_bucket_type == 'WEEK'):
@@ -390,6 +392,23 @@ def GenerateHourlyOHLC(instrument, start, end):
     runFullAggregationPipeline(day_increment, interval_bucket_size, interval_bucket_type, intervalAggregateTerm, start, end, instrument, tf, tzOffset)
     print("Finished Hourly OHLC")
 
+def Generate4HourlyOHLC(instrument, start, end, FXAnchor):
+    # FXAnchor = True then 1st weekly H4 Candle starts at 17:00 Sun EST (same as Daily Skew)
+    # FXAnchor = False then (Futures) 1st weekly H4 Candle starts at 18:00 Sun EST
+    tzOffset = 'EST'
+    day_increment = 5
+    interval_bucket_size = 240
+    interval_bucket_type = 'MINUTE'
+    tf = 'H4'
+    hours_skew = 2
+
+    if not FXAnchor:
+        hours_skew = 1
+
+    intervalAggregateTerm = f"toDateTime(toStartOfInterval(s5.timestamp, INTERVAL {interval_bucket_size} {interval_bucket_type}, '{tzOffset}')) as interval"
+
+    runFullAggregationPipeline(day_increment, interval_bucket_size, interval_bucket_type, intervalAggregateTerm, start, end, instrument, tf, tzOffset, hours_skew)
+    print("Finished Hourly OHLC")
 
 def GenerateDailyOHLC(instrument, start, end):
     tzOffset = 'EST'

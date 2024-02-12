@@ -17,5 +17,9 @@ clearOHLCTable()
 # GenerateMinuteOHLC(instrument, start, end, minutes)
 
 # GenerateHourlyOHLC(instrument, start, end)
-GenerateDailyOHLC(instrument, start, end)
-GenerateWeeklyOHLC(instrument, start, end)
+
+Generate4HourlyOHLC(instrument, start, end, True)
+# Generate4HourlyOHLC(instrument, start, end, False) # For Indexes and Futures with H4 Alinged to 18:00
+
+# GenerateDailyOHLC(instrument, start, end)
+# GenerateWeeklyOHLC(instrument, start, end)
