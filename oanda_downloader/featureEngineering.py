@@ -226,13 +226,13 @@ def export_df_to_parquet(bars, instrument, tf):
 def perform_feature_eng(instrument):
 #     instrument = 'EUR_USD'
 
-    # # Weekly:
-    # tf = 'W1'
-    # tf_minutes = 10080 #week
-    # start = time.time()
-    # perform_feature_eng_tf(instrument, tf, tf_minutes)
-    # end = time.time()
-    # print(f'{datetime.today().isoformat(" ","seconds")}: {instrument} - {tf} Features Created and Serialised to Parquet in: {(end-start):.2f} seconds')
+    # Weekly:
+    tf = 'W1'
+    tf_minutes = 10080 #week
+    start = time.time()
+    perform_feature_eng_tf(instrument, tf, tf_minutes)
+    end = time.time()
+    print(f'{datetime.today().isoformat(" ","seconds")}: {instrument} - {tf} Features Created and Serialised to Parquet in: {(end-start):.2f} seconds')
 
     ## Daily:
     tf = 'D1'
@@ -242,45 +242,45 @@ def perform_feature_eng(instrument):
     end = time.time()
     print(f'{datetime.today().isoformat(" ","seconds")}: {instrument} - {tf} Features Created and Serialised to Parquet in: {(end-start):.2f} seconds')
 
-    #  # 4 Hourly:
-    # tf = 'H4'
-    # tf_minutes = 240 #H4
-    # start = time.time()
-    # perform_feature_eng_tf(instrument, tf, tf_minutes)
-    # end = time.time()
-    # print(f'{datetime.today().isoformat(" ","seconds")}: {instrument} - {tf} Features Created and Serialised to Parquet in: {(end-start):.2f} seconds')
+     # 4 Hourly:
+    tf = 'H4'
+    tf_minutes = 240 #H4
+    start = time.time()
+    perform_feature_eng_tf(instrument, tf, tf_minutes)
+    end = time.time()
+    print(f'{datetime.today().isoformat(" ","seconds")}: {instrument} - {tf} Features Created and Serialised to Parquet in: {(end-start):.2f} seconds')
 
-    # ## Hourly:
-    # tf = 'H1'
-    # tf_minutes = 60
-    # start = time.time()
-    # perform_feature_eng_tf(instrument, tf, tf_minutes)
-    # end = time.time()
-    # print(f'{datetime.today().isoformat(" ","seconds")}: {instrument} - {tf} Features Created and Serialised to Parquet in: {(end-start):.2f} seconds')
+    ## Hourly:
+    tf = 'H1'
+    tf_minutes = 60
+    start = time.time()
+    perform_feature_eng_tf(instrument, tf, tf_minutes)
+    end = time.time()
+    print(f'{datetime.today().isoformat(" ","seconds")}: {instrument} - {tf} Features Created and Serialised to Parquet in: {(end-start):.2f} seconds')
 
-    # ## M15:
-    # tf = 'M15'
-    # tf_minutes = 15
-    # start = time.time()
-    # perform_feature_eng_tf(instrument, tf, tf_minutes)
-    # end = time.time()
-    # print(f'{datetime.today().isoformat(" ","seconds")}: {instrument} - {tf} Features Created and Serialised to Parquet in: {(end-start):.2f} seconds')
+    ## M15:
+    tf = 'M15'
+    tf_minutes = 15
+    start = time.time()
+    perform_feature_eng_tf(instrument, tf, tf_minutes)
+    end = time.time()
+    print(f'{datetime.today().isoformat(" ","seconds")}: {instrument} - {tf} Features Created and Serialised to Parquet in: {(end-start):.2f} seconds')
 
-    # ## M5:
-    # tf = 'M5'
-    # tf_minutes = 5
-    # start = time.time()
-    # perform_feature_eng_tf(instrument, tf, tf_minutes)
-    # end = time.time()
-    # print(f'{datetime.today().isoformat(" ","seconds")}: {instrument} - {tf} Features Created and Serialised to Parquet in: {(end-start):.2f} seconds')
+    ## M5:
+    tf = 'M5'
+    tf_minutes = 5
+    start = time.time()
+    perform_feature_eng_tf(instrument, tf, tf_minutes)
+    end = time.time()
+    print(f'{datetime.today().isoformat(" ","seconds")}: {instrument} - {tf} Features Created and Serialised to Parquet in: {(end-start):.2f} seconds')
 
-    # ## M1:
-    # tf = 'M1'
-    # tf_minutes = 1
-    # start = time.time()
-    # perform_feature_eng_tf(instrument, tf, tf_minutes)
-    # end = time.time()
-    # print(f'{datetime.today().isoformat(" ","seconds")}: {instrument} - {tf} Features Created and Serialised to Parquet in: {(end-start):.2f} seconds')
+    ## M1:
+    tf = 'M1'
+    tf_minutes = 1
+    start = time.time()
+    perform_feature_eng_tf(instrument, tf, tf_minutes)
+    end = time.time()
+    print(f'{datetime.today().isoformat(" ","seconds")}: {instrument} - {tf} Features Created and Serialised to Parquet in: {(end-start):.2f} seconds')
 
 def perform_feature_eng_tf(instrument, tf, tf_minutes):
     
