@@ -253,10 +253,10 @@ def outputFinalDataSet(instrument, tf):
     dfres['last_sample'] = dfres['last_sample'].astype(pd.DatetimeTZDtype(tz=ZoneInfo('EST')))
     
     # dfres['interval'] = dfres['interval'].astype(pd.DatetimeTZDtype(tz=ZoneInfo('EST')))
-    if tf not in ['D1', 'W1', 'M1']:
+    if tf not in ['D1', 'W1', 'M']:
         dfres['interval'] = dfres['interval'].astype(pd.DatetimeTZDtype(tz=ZoneInfo('EST')))
     dfres = dfres.set_index(['interval'])
-    if tf in ['D1', 'W1', 'M1']:
+    if tf in ['D1', 'W1', 'M']:
         dfres.index = dfres.index.date
 
 

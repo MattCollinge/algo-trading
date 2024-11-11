@@ -36,14 +36,18 @@ def loadIntervalDataframe(instrument, tf):
     # Load Data from Parquet:
     #     instrument = 'EUR_USD'
     #     tf = 'W1'
-
+    tzOffset = 'EST'
     datafile = f"{baseDataPath}oanda_{instrument}_{tf}.parquet"
     df = load_df_from_parquet(datafile)
     
     if tf in ['W1', 'D1']:
         df.index = pd.to_datetime(df.index, utc=True)
     else:
-        df.index = df.index.astype(pd.DatetimeTZDtype(tz=ZoneInfo('EST'))) #sorts out Trading Day in EST time.
+        df.index = df.index.astype(pd.DatetimeTZDtype(tz=ZoneInfo(tzOffset))) #sorts out Trading Day in EST time.
+        df['high_timestamp'] = df['high_timestamp'].astype(pd.DatetimeTZDtype(tz=ZoneInfo(tzOffset)))
+        df['low_timestamp'] = df['low_timestamp'].astype(pd.DatetimeTZDtype(tz=ZoneInfo(tzOffset)))
+        df['first_sample'] = df['first_sample'].astype(pd.DatetimeTZDtype(tz=ZoneInfo(tzOffset)))
+        df['last_sample'] = df['last_sample'].astype(pd.DatetimeTZDtype(tz=ZoneInfo(tzOffset)))
 
     # Data Clean Up - need to push back into Parquet generation:
     # For some reason The Last Week in Oct starts on a Sunday instead of a Monday
@@ -68,7 +72,7 @@ def loadIntervalDataframe(instrument, tf):
         print(f'Dropped {skewed_count}')
         # oddrowsck = df['tf'] = 'W1' and df.index.dayofweek >5
         # df.loc[oddrows].head(100)
-        
+    # print(df.head(10))    
     return df
 
 # Work out the Proportion of the Interval the Highs and Lows occured at:
@@ -161,7 +165,8 @@ def featureEng(df, tf_minutes):
     # df['high_hour_of_week'] =  high_ts.apply(lambda row: row.hour + ((row.dayofweek*24)))
     # df['high_hour_of_week_trading_sun_0'] =  high_ts.apply(lambda row: row.hour + ((((row + timedelta(hours=7)).dayofweek+1)%7)*24))
     # df['high_hour_of_week_sun_0'] =  high_ts.apply(lambda row: row.hour + (((row.dayofweek+ 1)%7)*24))
-    df['high_hour_of_week_trading'] =  high_ts.apply(lambda row: row.hour + ((row + timedelta(hours=7)).dayofweek*24)) # 17:00 Sun = Hour 1 -> 16:00 Fri = 120
+    df['high_hour_of_week_trading'] =  high_ts.apply(lambda row: ((row + timedelta(hours=7)).dayofweek*24) + (row + timedelta(hours=7)).hour) # 18:00 Sun = Hour 1 -> 16:00 Fri = 120
+    df['high_hour_of_day_trading'] =  high_ts.apply(lambda row:  (row + timedelta(hours=7)).hour) 
     df['high_minute_of_hour'] = high_ts.dt.minute
     df['high_minute_of_day'] = (high_ts.dt.hour * 60) + high_ts.dt.minute
     df['high_second_of_minute'] = high_ts.dt.second
@@ -181,7 +186,8 @@ def featureEng(df, tf_minutes):
     df['low_hour_of_day'] = low_ts.dt.hour
     # df['low_hour_of_week'] =  low_ts.apply(lambda row: row.hour + ((row + timedelta(hours=7)).dayofweek*24))
     # df['low_hour_of_week_sun_0'] =  low_ts.apply(lambda row: row.hour + (((row.dayofweek+ 1)%7)*24))
-    df['low_hour_of_week_trading'] =  low_ts.apply(lambda row: row.hour + ((row + timedelta(hours=7)).dayofweek*24))
+    df['low_hour_of_week_trading'] =  low_ts.apply(lambda row: ((row + timedelta(hours=7)).dayofweek*24) + (row + timedelta(hours=7)).hour)
+    df['low_hour_of_day_trading'] =  low_ts.apply(lambda row: (row + timedelta(hours=7)).hour) 
     df['low_minute_of_hour'] = low_ts.dt.minute
     df['low_minute_of_day'] = (low_ts.dt.hour * 60) + low_ts.dt.minute
     df['low_second_of_minute'] = low_ts.dt.second
@@ -195,11 +201,11 @@ def featureEng(df, tf_minutes):
     df['bullish'] = df.close >= df.open
 
     if tf_minutes == 10080: #'W1'
-        df['high_proportion_of_week'] =df.apply(weekHighProportionRow, axis=1)
-        df['low_proportion_of_week'] =df.apply(weekLowProportionRow, axis=1)
+        df['high_proportion_of_interval'] =df.apply(weekHighProportionRow, axis=1)
+        df['low_proportion_of_interval'] =df.apply(weekLowProportionRow, axis=1)
     elif tf_minutes==1440: #'D1'
-        df['high_proportion_of_day'] =df.apply(dayHighProportionRow, axis=1)
-        df['low_proportion_of_day'] =df.apply(dayLowProportionRow, axis=1)
+        df['high_proportion_of_interval'] =df.apply(dayHighProportionRow, axis=1)
+        df['low_proportion_of_interval'] =df.apply(dayLowProportionRow, axis=1)
     else:
         df['high_proportion_of_interval'] =df.apply(lambda row: intervalHighProportionRow(row, tf_minutes), axis=1)
         df['low_proportion_of_interval'] =df.apply(lambda row: intervalLowProportionRow(row, tf_minutes), axis=1)
@@ -274,6 +280,14 @@ def perform_feature_eng(instrument):
     end = time.time()
     print(f'{datetime.today().isoformat(" ","seconds")}: {instrument} - {tf} Features Created and Serialised to Parquet in: {(end-start):.2f} seconds')
 
+    # ## M2:
+    # tf = 'M2'
+    # tf_minutes = 2
+    # start = time.time()
+    # perform_feature_eng_tf(instrument, tf, tf_minutes)
+    # end = time.time()
+    # print(f'{datetime.today().isoformat(" ","seconds")}: {instrument} - {tf} Features Created and Serialised to Parquet in: {(end-start):.2f} seconds')
+    
     ## M1:
     tf = 'M1'
     tf_minutes = 1
