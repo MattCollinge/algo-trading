@@ -166,7 +166,9 @@ def featureEng(df, tf_minutes):
     # df['high_hour_of_week_trading_sun_0'] =  high_ts.apply(lambda row: row.hour + ((((row + timedelta(hours=7)).dayofweek+1)%7)*24))
     # df['high_hour_of_week_sun_0'] =  high_ts.apply(lambda row: row.hour + (((row.dayofweek+ 1)%7)*24))
     df['high_hour_of_week_trading'] =  high_ts.apply(lambda row: ((row + timedelta(hours=7)).dayofweek*24) + (row + timedelta(hours=7)).hour) # 18:00 Sun = Hour 1 -> 16:00 Fri = 120
-    df['high_hour_of_day_trading'] =  high_ts.apply(lambda row:  (row + timedelta(hours=7)).hour) 
+    df['high_minute_of_week_trading'] =  high_ts.apply(lambda row: ((row + timedelta(hours=7)).dayofweek*24) + ((row + timedelta(hours=7)).hour * 60) + (row + timedelta(hours=7)).minute) 
+    df['high_hour_of_day_trading'] =  high_ts.apply(lambda row:  (row + timedelta(hours=7)).hour)
+    df['high_minute_of_day_trading'] =  high_ts.apply(lambda row: ((row + timedelta(hours=7)).hour * 60) + (row + timedelta(hours=7)).minute)  
     df['high_minute_of_hour'] = high_ts.dt.minute
     df['high_minute_of_day'] = (high_ts.dt.hour * 60) + high_ts.dt.minute
     df['high_second_of_minute'] = high_ts.dt.second
@@ -187,7 +189,9 @@ def featureEng(df, tf_minutes):
     # df['low_hour_of_week'] =  low_ts.apply(lambda row: row.hour + ((row + timedelta(hours=7)).dayofweek*24))
     # df['low_hour_of_week_sun_0'] =  low_ts.apply(lambda row: row.hour + (((row.dayofweek+ 1)%7)*24))
     df['low_hour_of_week_trading'] =  low_ts.apply(lambda row: ((row + timedelta(hours=7)).dayofweek*24) + (row + timedelta(hours=7)).hour)
+    df['low_minute_of_week_trading'] =  low_ts.apply(lambda row: ((row + timedelta(hours=7)).dayofweek*24) + ((row + timedelta(hours=7)).hour * 60) + (row + timedelta(hours=7)).minute) 
     df['low_hour_of_day_trading'] =  low_ts.apply(lambda row: (row + timedelta(hours=7)).hour) 
+    df['low_minute_of_day_trading'] =  low_ts.apply(lambda row: ((row + timedelta(hours=7)).hour * 60) + (row + timedelta(hours=7)).minute)   
     df['low_minute_of_hour'] = low_ts.dt.minute
     df['low_minute_of_day'] = (low_ts.dt.hour * 60) + low_ts.dt.minute
     df['low_second_of_minute'] = low_ts.dt.second
